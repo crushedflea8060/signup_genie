@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eighth Genie</title>
+<style>
+  :root {
+    --sky-top: #1e90e8;
+    --sky-mid: #6fd0ff;
+    --sky-low: #d9f6ff;
+    --aqua: #19c6e6;
+    --aqua-deep: #0a7fc4;
+    --leaf: #5fcf3a;
+    --leaf-deep: #2a9a1e;
+    --ink: #0b3d66;
+    --glass: rgba(255, 255, 255, .38);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Segoe UI", "Frutiger", "Trebuchet MS", "Lucida Grande", sans-serif;
+    color: var(--ink);
+    background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-low) 80%);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  /* sun + rays */
+  .sun {
+    position: fixed; top: -140px; right: -100px; width: 520px; height: 520px; border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, rgba(255,255,210,.9) 18%, rgba(255,240,150,.35) 42%, transparent 70%);
+    pointer-events: none;
+  }
+  .rays {
+    position: fixed; top: -300px; right: -300px; width: 900px; height: 900px; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg, rgba(255,255,255,.16) 0deg 6deg, transparent 6deg 16deg);
+    -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 65%);
+            mask-image: radial-gradient(circle, #000 0%, transparent 65%);
+    animation: spin 120s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* clouds */
+  .cloud {
+    position: fixed; background: #fff; border-radius: 100px; filter: blur(2px); opacity: .85;
+    box-shadow: 0 8px 20px rgba(80,160,230,.25); pointer-events: none;
+  }
+  .cloud::before, .cloud::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+  .cloud::before { width: 55%; height: 160%; top: -70%; left: 14%; }
+  .cloud::after  { width: 40%; height: 120%; top: -45%; right: 12%; }
+  .c1 { width: 220px; height: 54px; top: 11%; left: 6%; animation: drift 90s linear infinite alternate; }
+  .c2 { width: 300px; height: 70px; top: 24%; right: 14%; animation: drift 120s linear infinite alternate-reverse; }
+  .c3 { width: 160px; height: 40px; top: 52%; left: 30%; opacity: .6; animation: drift 100s linear infinite alternate; }
+  @keyframes drift { from { transform: translateX(-40px); } to { transform: translateX(60px); } }
+
+  /* bubbles */
+  .bubble {
+    position: fixed; bottom: -120px; border-radius: 50%; pointer-events: none;
+    background:
+      radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 8%, transparent 20%),
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,.05) 55%, rgba(255,255,255,.55) 100%);
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow: inset 0 -8px 16px rgba(80,200,255,.35), 0 4px 14px rgba(0,120,200,.18);
+    animation: rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) translateX(0); opacity: 0; }
+    10%  { opacity: 1; }
+    50%  { transform: translateY(-60vh) translateX(24px); }
+    100% { transform: translateY(-125vh) translateX(-18px); opacity: .9; }
+  }
+
+  /* grassy hill */
+  .hills { position: fixed; left: 0; right: 0; bottom: 0; height: 28vh; min-height: 170px; pointer-events: none; }
+  .hills svg { width: 100%; height: 100%; display: block; }
+
+  /* top taskbar */
+  .bar {
+    position: relative; z-index: 5; display: flex; align-items: center; gap: 14px;
+    padding: 8px 18px; font-size: 13px;
+    background: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.25) 50%, rgba(120,200,255,.3) 51%, rgba(255,255,255,.35));
+    border-bottom: 1px solid rgba(255,255,255,.8);
+    box-shadow: 0 2px 12px rgba(0,90,160,.2);
+    backdrop-filter: blur(8px);
+  }
+  .orb {
+    width: 30px; height: 30px; border-radius: 50%; flex: none; position: relative;
+    background: radial-gradient(circle at 50% 120%, #7dffb0 0%, #19b24a 45%, #0b7a2e 100%);
+    border: 2px solid rgba(255,255,255,.9);
+    box-shadow: 0 2px 8px rgba(0,80,40,.45), inset 0 -4px 8px rgba(190,255,200,.5);
+  }
+  .orb::after { content: ""; position: absolute; top: 2px; left: 5px; width: 18px; height: 10px; border-radius: 50%; background: linear-gradient(rgba(255,255,255,.95), rgba(255,255,255,.1)); }
+  .bar b { font-weight: 600; letter-spacing: .2px; }
+  .spacer { flex: 1; }
+  .chip {
+    padding: 3px 11px; border-radius: 99px; background: rgba(255,255,255,.55); border: 1px solid rgba(255,255,255,.9);
+    box-shadow: inset 0 1px 0 #fff, 0 1px 3px rgba(0,80,140,.2);
+  }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: radial-gradient(circle at 35% 30%, #eaffd8, #3ed04a 60%, #1c8a2a); box-shadow: 0 0 6px #5dff6f; }
+
+  /* main stage */
+  main { position: relative; z-index: 3; display: grid; place-items: center; padding: 5vh 18px 24vh; }
+  .panel {
+    position: relative; width: min(640px, 100%); padding: 38px 34px 34px; text-align: center; border-radius: 28px;
+    background: linear-gradient(160deg, rgba(255,255,255,.62), var(--glass) 40%, rgba(150,225,255,.35));
+    border: 1.5px solid rgba(255,255,255,.9);
+    box-shadow: 0 20px 50px rgba(0,80,160,.35), inset 0 2px 0 rgba(255,255,255,.95), inset 0 -18px 40px rgba(80,200,255,.25);
+    backdrop-filter: blur(14px) saturate(1.4);
+    overflow: hidden;
+  }
+  .panel::before { /* glass gloss */
+    content: ""; position: absolute; left: -10%; right: -10%; top: 0; height: 46%;
+    background: linear-gradient(180deg, rgba(255,255,255,.65), rgba(255,255,255,.08));
+    border-radius: 0 0 50% 50% / 0 0 30% 30%; pointer-events: none;
+  }
+  .panel > * { position: relative; }
+  .lamp {
+    width: 96px; height: 96px; margin: 0 auto 6px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 110%, #b6f6ff 0%, var(--aqua) 40%, var(--aqua-deep) 100%);
+    border: 3px solid #fff; box-shadow: 0 8px 22px rgba(0,110,190,.5), inset 0 -10px 20px rgba(200,250,255,.6);
+    display: grid; place-items: center; font-size: 46px; animation: bob 4s ease-in-out infinite;
+  }
+  @keyframes bob { 50% { transform: translateY(-8px); } }
+  h1 {
+    margin: 8px 0 4px; font-size: clamp(2.2rem, 7vw, 3.4rem); font-weight: 300; letter-spacing: -.5px; color: #fff;
+    text-shadow: 0 2px 0 rgba(0,100,180,.55), 0 4px 14px rgba(0,80,160,.55), 0 0 28px rgba(255,255,255,.7);
+  }
+  h1 strong { font-weight: 700; }
+  .tag { margin: 0 auto 24px; max-width: 46ch; line-height: 1.5; font-size: 1rem; text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+
+  /* glossy button */
+  form { margin: 0; }
+  .go {
+    position: relative; width: 100%; max-width: 480px; padding: 20px 26px; cursor: pointer;
+    font: 600 1.05rem/1.35 "Segoe UI", "Trebuchet MS", sans-serif; color: #fff;
+    text-shadow: 0 -1px 0 rgba(0,70,130,.7), 0 0 10px rgba(0,60,120,.5);
+    border: 2px solid #fff; border-radius: 22px; overflow: hidden;
+    background: linear-gradient(180deg, #5be0ff 0%, #17a8e6 48%, #0786d1 52%, #28c9f0 100%);
+    box-shadow: 0 8px 20px rgba(0,100,180,.55), 0 0 0 4px rgba(255,255,255,.35), inset 0 -6px 12px rgba(0,120,200,.45);
+    transition: transform .15s, box-shadow .15s, filter .15s;
+  }
+  .go::before { content: ""; position: absolute; left: 4%; right: 4%; top: 3px; height: 46%; border-radius: 18px 18px 40px 40px / 18px 18px 14px 14px; background: linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.12)); pointer-events: none; }
+  .go::after { content: ""; position: absolute; top: 0; left: -80%; width: 50%; height: 100%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.7), transparent); transform: skewX(-20deg); animation: sheen 4.5s ease-in-out infinite; }
+  @keyframes sheen { 0%, 60% { left: -80%; } 100% { left: 140%; } }
+  .go:hover { filter: brightness(1.1) saturate(1.15); transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,100,180,.6), 0 0 0 4px rgba(255,255,255,.55), inset 0 -6px 12px rgba(0,120,200,.45); }
+  .go:active { transform: translateY(1px) scale(.99); }
+  .go:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+
+  .extras { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; font-size: .82rem; }
+  .meter { width: 100%; max-width: 480px; margin: 18px auto 0; height: 16px; border-radius: 99px; background: rgba(255,255,255,.5); border: 1px solid #fff; box-shadow: inset 0 2px 5px rgba(0,80,140,.35); overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 82%; border-radius: 99px; background: linear-gradient(180deg, #b9ff9a, var(--leaf) 50%, var(--leaf-deep) 52%, #7fe85a); box-shadow: 0 0 10px rgba(110,255,80,.8); animation: fill 3s ease-out both; }
+  @keyframes fill { from { width: 0; } }
+  .meter-label { margin-top: 6px; font-size: .78rem; opacity: .8; }
+
+  /* ticker */
+  .ticker { position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; padding: 7px 0; overflow: hidden; white-space: nowrap; font-size: 12.5px; color: #fff; background: linear-gradient(180deg, rgba(40,170,60,.9), rgba(20,110,40,.95)); border-top: 1px solid rgba(255,255,255,.7); text-shadow: 0 1px 1px rgba(0,60,20,.7); }
+  .ticker span { display: inline-block; padding-left: 100%; animation: scroll 38s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-100%); } }
+
+  @media (max-width: 520px) { .panel { padding: 30px 18px 26px; } .bar .hide-sm { display: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="sun"></div>
+<div class="rays"></div>
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+<div class="cloud c3"></div>
+
+<div class="hills" aria-hidden="true">
+  <svg viewBox="0 0 1440 300" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8ef05a"/><stop offset="1" stop-color="#2f9f26"/></linearGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b6ff7a"/><stop offset="1" stop-color="#46b833"/></linearGradient>
+    </defs>
+    <path d="M0 150 C 260 60, 520 90, 760 150 S 1220 200, 1440 110 V300 H0Z" fill="url(#g1)"/>
+    <path d="M0 210 C 300 130, 600 170, 900 215 S 1300 230, 1440 180 V300 H0Z" fill="url(#g2)"/>
+  </svg>
+</div>
+
+<div class="bar">
+  <div class="orb" aria-hidden="true"></div>
+  <b>Eighth Genie</b>
+  <span class="chip hide-sm"><span class="dot"></span>Aero Glass: enabled</span>
+  <span class="spacer"></span>
+  <span class="chip hide-sm">Wi-Fi: 5 bars</span>
+  <span class="chip" id="clock">--:--</span>
+</div>
+
+<main>
+  <section class="panel">
+    <div class="lamp" aria-hidden="true">🧞</div>
+    <h1>Eighth <strong>Genie</strong></h1>
+    <p class="tag">Your wish is my command. Sign in once, and every eighth period from tomorrow onward gets signed up for you.</p>
+
+    <form action="/login">
+      <button class="go" type="submit">Signup for the configured eighth period activity for everyday past today.</button>
+    </form>
+
+    <div class="meter" role="img" aria-label="Wish power 82 percent"><i></i></div>
+    <div class="meter-label">Wish power: 82%</div>
+
+    <div class="extras">
+      <span class="chip"><span class="dot"></span>Genie online</span>
+      <span class="chip">🫧 Bubbles: plenty</span>
+      <span class="chip">🌿 Eco mode</span>
+      <span class="chip">☁️ Cloud synced</span>
+    </div>
+  </section>
+</main>
+
+<div class="ticker" aria-hidden="true">
+  <span>Welcome to Eighth Genie &nbsp;•&nbsp; Now with 40% more gloss &nbsp;•&nbsp; Please keep hands and feet inside the Aero Glass &nbsp;•&nbsp; Fresh bubbles every few seconds &nbsp;•&nbsp; Have a splashing day!</span>
+</div>
+
+<script>
+  // bubbles
+  (function () {
+    for (var i = 0; i < 16; i++) {
+      var b = document.createElement("div");
+      var s = 18 + Math.random() * 70;
+      b.className = "bubble";
+      b.style.width = b.style.height = s + "px";
+      b.style.left = Math.random() * 100 + "vw";
+      b.style.animationDuration = 14 + Math.random() * 18 + "s";
+      b.style.animationDelay = -Math.random() * 26 + "s";
+      document.body.appendChild(b);
+    }
+  })();
+  // clock
+  function tick() {
+    var d = new Date();
+    document.getElementById("clock").textContent =
+      d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  tick(); setInterval(tick, 15000);
+</script>
+</body>
+</html>
